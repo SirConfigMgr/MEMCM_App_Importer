@@ -1,0 +1,363 @@
+<Controls:MetroWindow
+	xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+	xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:controlzEx="urn:controlzex"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:simpleChildWindow="clr-namespace:MahApps.Metro.SimpleChildWindow;assembly=MahApps.Metro.SimpleChildWindow"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:MECM_App_Importer"
+	WindowStyle="None"
+    Title="MECM App Importer" 
+    Height="700" 
+    Width="750"
+    BorderThickness="1" 		
+	GlowBrush="{DynamicResource AccentColorBrush}"
+    WindowStartupLocation="CenterScreen"
+	RenderOptions.ClearTypeHint="Enabled"
+    TextOptions.TextFormattingMode="Display"
+	ResizeMode="NoResize">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+		        <ResourceDictionary Source="resources\Icons.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Light.Steel.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.FlatButton.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+	    </ResourceDictionary>
+    </Window.Resources>	
+
+    <Controls:MetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+			<StackPanel Orientation="Horizontal">					
+            <Button Name="Button_About" ToolTip="About" Margin="-5 0 -5 0">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconEntypo Kind="Info" />
+                </StackPanel>
+            </Button>
+            </StackPanel>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.RightWindowCommands>
+
+    <Grid>
+        <TabControl x:Name ="TabControl">
+            <TabItem x:Name="TabItem_Application" Header="Application">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label x:Name="Label_Vendor" Content="Vendor" HorizontalAlignment="Left" Margin="10,115,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_Name" Content="Name" HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_Version" Content="Version" HorizontalAlignment="Left" Margin="10,175,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_Language" Content="Language" HorizontalAlignment="Left" Margin="10,205,0,0" VerticalAlignment="Top" Width="85"/>
+                    <TextBox x:Name="TextBox_Vendor" HorizontalAlignment="Left" Height="23" Margin="135,115,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="120"/>
+                    <TextBox x:Name="TextBox_Name" HorizontalAlignment="Left" Height="23" Margin="135,145,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="120"/>
+                    <TextBox x:Name="TextBox_Version" HorizontalAlignment="Left" Height="23" Margin="135,175,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="120"/>
+                    <TextBox x:Name="TextBox_Language" HorizontalAlignment="Left" Height="23" Margin="135,205,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="120"/>
+                    <Label x:Name="Label_Architecture" Content="Architecture" HorizontalAlignment="Left" Margin="380,115,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="Label_Revision" Content="Revision" HorizontalAlignment="Left" Margin="380,145,0,0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="ComboBox_Architecture" HorizontalAlignment="Left" Margin="500,115,0,0" VerticalAlignment="Top" Width="120">
+			            <ComboBoxItem>X86</ComboBoxItem>
+			            <ComboBoxItem>X64</ComboBoxItem>
+		            </ComboBox>
+                    <TextBox x:Name="TextBox_Revision" HorizontalAlignment="Left" Height="23" Margin="500,145,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="120"/>
+		            <Button x:Name="Button_LoadInstaller" FontSize="12" Content="Load Installer" Height="25" Width="125" Margin="15,70,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <Label x:Name="Label_Installtype" Content="Installtype" HorizontalAlignment="Left" Margin="10,265,0,0" VerticalAlignment="Top" Width="120"/>
+                    <ComboBox x:Name="ComboBox_Installtype" Margin="135,265,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+			            <ComboBoxItem>MSI</ComboBoxItem>
+			            <ComboBoxItem>Script</ComboBoxItem>
+		            </ComboBox>
+                    <Label x:Name="Label_Installfile" Content="Installfile" HorizontalAlignment="Left" Margin="10,295,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Installfile" HorizontalAlignment="Left" Height="23" Margin="135,295,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Label x:Name="Label_Installparameter" Content="Installparameter" HorizontalAlignment="Left" Margin="10,325,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Installparameter" HorizontalAlignment="Left" Height="23" Margin="135,325,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Label x:Name="Label_Detection" Content="Detection" HorizontalAlignment="Left" Margin="10,355,0,0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="ComboBox_Detection" Margin="135,355,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+                        <ComboBoxItem>Product Code</ComboBoxItem>
+                        <ComboBoxItem>PS Script</ComboBoxItem>
+		            </ComboBox>
+                    <Button x:Name="Button_DetectionButton" Content="Edit Script..." FontSize="12" Margin="275,355,0,0" Height="26" Width="85" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Hidden"/>
+                    <Label x:Name="Label_Uninstalltype" Content="Uninstalltype" HorizontalAlignment="Left" Margin="380,265,0,0" VerticalAlignment="Top" Width="120"/>
+                    <ComboBox x:Name="ComboBox_Uninstalltype" Margin="500,265,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="120">
+			            <ComboBoxItem>Product Name</ComboBoxItem>
+			            <ComboBoxItem>Product Code</ComboBoxItem>
+                        <ComboBoxItem>Script</ComboBoxItem>
+		            </ComboBox>
+                    <Label x:Name="Label_UninstallNameOrCode" Content="Product Name" HorizontalAlignment="Left" Margin="380,295,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_UninstallNameOrCode" HorizontalAlignment="Left" Height="23" Margin="500,295,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Label x:Name="Label_Uninstallparameter" Content="Uninstallparameter" HorizontalAlignment="Left" Margin="380,325,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Uninstallparameter" HorizontalAlignment="Left" Height="23" Margin="500,325,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Label x:Name="Label_Sourcefolder" Content="Source Folder" HorizontalAlignment="Left" Margin="10,415,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Sourcefolder" HorizontalAlignment="Left" Height="23" Margin="135,415,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Label x:Name="Label_Message" Content="Message (PowerShell App Deployment Toolkit)" HorizontalAlignment="Left" Margin="10,455,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Message" Margin="15,480,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="50" Width="345" TextWrapping="Wrap" />
+                    <Button x:Name="Button_GeneratePackage" Content="Generate Package" FontSize="12" Margin="15,565,0,0" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Button x:Name="Button_LoadPkgInfo" Content="Load Package Info" FontSize="12" Margin="150,565,0,0" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="TabItem_MECM" Header="MECM" >
+                <Grid Margin="0,100,0,0" HorizontalAlignment="Center" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+			            <ColumnDefinition Width="150" />
+			            <ColumnDefinition Width="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+			            <RowDefinition Height="30" />
+			            <RowDefinition Height="30" />
+			            <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+		            </Grid.RowDefinitions>  
+                    <Button x:Name="Button_ConnectMECM" Grid.Column="1" Grid.Row="0" FontSize="12" Content="Connect to MECM" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="TextBox_ConnectMECM" Grid.Column="2" Grid.Row="0" Width="125" Height="25" VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                    <Button x:Name="Button_AppSettings" Grid.Column="0" Grid.Row="1" FontSize="12" Content="Application Settings" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <Button x:Name="Button_CreateApp" Grid.Column="1" Grid.Row="1" FontSize="12" Content="Create Application" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <TextBox x:Name="TextBox_CreateApp" Grid.Column="2" Grid.Row="1" Width="125" Height="25" VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                    <Button x:Name="Button_CollectionSettings" Grid.Column="0" Grid.Row="2" FontSize="12" Content="Collection Settings" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <Button x:Name="Button_CreateCollections" Grid.Column="1" Grid.Row="2" FontSize="12" Content="Create Collections" Height="25" Width="140"  VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <TextBox x:Name="TextBox_CreateCollections" Grid.Column="2" Grid.Row="2" Width="125" Height="25"  VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                    <Button x:Name="Button_DistributionSettings" Grid.Column="0" Grid.Row="3" FontSize="12" Content="Distribution Settings" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <Button x:Name="Button_DistributeContent" Grid.Column="1" Grid.Row="3" FontSize="12" Content="Distribute Content" Height="25" Width="140"  VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <TextBox x:Name="TextBox_DistributeContent" Grid.Column="2" Grid.Row="3" Width="125" Height="25"  VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                    <Button x:Name="Button_DeploymentSettings" Grid.Column="0" Grid.Row="4" FontSize="12" Content="Deployment Settings" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
+                    <Button x:Name="Button_CreateDeployments" Grid.Column="1" Grid.Row="4" FontSize="12" Content="Create Deployments" Height="25" Width="140"  VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>  
+                    <TextBox x:Name="TextBox_CreateDeployments" Grid.Column="2" Grid.Row="4" Width="125" Height="25"  VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="TabItem_Configuration" Header="Configuration">
+                <Grid>
+		            <Label x:Name="Label_PSADT" Content="Use PowerShell App Deployment Toolkit" Margin="10,115,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <CheckBox x:Name="CheckBox_PSADT" Margin="260,115,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <Label x:Name="Label_Sitecode" Content="Sitecode" Margin="10,145,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <Label x:Name="Label_Managementpoint" Content="Managementpoint" Margin="10,175,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Height="26"/>
+                    <TextBox x:Name="TextBox_Sitecode" Height="23" TextWrapping="NoWrap" Text="" Width="225" Margin="260,145,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TextBox_Managementpoint" Height="23" TextWrapping="NoWrap" Text="" Width="225" Margin="260,175,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                    <Label x:Name="Label_Destination" Content="Destination Folder" HorizontalAlignment="Left" Margin="10,205,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="TextBox_Destination" HorizontalAlignment="Left" Height="23" Margin="260,205,0,0" TextWrapping="NoWrap" Text="" VerticalAlignment="Top" Width="225"/>
+                    <Button x:Name="Button_SaveConfig" FontSize="12" Content="Save Config" Margin="15,235,0,0" Height="26" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+	<Image x:Name="Image_Logo" HorizontalAlignment="Left" Height="100" Margin="600,40,0,0" VerticalAlignment="Top" Width="120" Source="images\LogoSmall.png" RenderOptions.BitmapScalingMode="Fant" />
+    <Button x:Name="Button_Exit" FontSize="12" Content="Exit" Margin="30,30,30,30" Height="26" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_Package_Generation"
+        Padding="15"
+        Title="Package Generation"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label Name="Label_PG_ChildWindow" Content="" HorizontalAlignment="Center" />
+                <Button Name="Button_PG_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_MECM_ApplicationSettings"
+        Padding="15"
+        Title="Application Settings"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label x:Name="Label_ApplicationSettings" FontWeight="Bold" Content="Application Settings"  VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <Label x:Name="Label_InstallBehaviorType" Content="Installation Behavior Type" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="ComboBox_InstallBehaviorType" HorizontalAlignment="Left" VerticalAlignment="Top" Width="300">
+                    <ComboBoxItem>InstallForSystem</ComboBoxItem>
+			        <ComboBoxItem>InstallForUser</ComboBoxItem>
+                    <ComboBoxItem>InstallForSystemIfResourceIsDeviceOtherwiseInstallForUser</ComboBoxItem>
+		        </ComboBox>
+                <Label x:Name="Label_LogonRequirementType" Content="Logon Requirement Type" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="ComboBox_LogonRequirementType" HorizontalAlignment="Left" VerticalAlignment="Top" Width="300">
+                    <ComboBoxItem>OnlyWhenNoUserLoggedOn</ComboBoxItem>
+			        <ComboBoxItem>OnlyWhenUserLoggedOn</ComboBoxItem>
+                    <ComboBoxItem>WhetherOrNotUserLoggedOn</ComboBoxItem>
+		        </ComboBox>
+                <Button Name="Button_AS_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_MECM_CollectionSettings"
+        Padding="15"
+        Title="Collection Settings"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label x:Name="Label_CollectionSettings" FontWeight="Bold" Content="Collection Settings" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <Label x:Name="Label_LimitingCollection" Content="Limiting Collection" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <TextBox x:Name="TextBox_LimitingCollection" Text="" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" />
+                <Label x:Name="Label_Folder" Content="Folder" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <TextBox x:Name="TextBox_Folder" Text="" VerticalAlignment="Top" HorizontalAlignment="Left" Width="300" />
+                <Button Name="Button_CS_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_MECM_DistributionSettings"
+        Padding="15"
+        Title="Distribution Settings"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label x:Name="Label_DistributionSettings" FontWeight="Bold" Content="Distribution Settings" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <Label x:Name="Label_DistributionPointGroup" Content="DP Group" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="ComboBox_DistributionPointGroup" HorizontalAlignment="Left" VerticalAlignment="Top" Width="300"/>
+                <Button Name="Button_DistS_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_MECM_DeploymentSettings"
+        Padding="15"
+        Title="Deployment Settings"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label x:Name="Label_DeploymentSettings" FontWeight="Bold" Content="Deployment Settings" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <Label x:Name="Label_DeployPurpose" Content="Deployment Purpose" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="ComboBox_DeployPurpose" HorizontalAlignment="Left" VerticalAlignment="Top" Width="300">
+                    <ComboBoxItem>Required</ComboBoxItem>
+                    <ComboBoxItem>Available</ComboBoxItem>
+                </ComboBox>
+                <Label x:Name="Label_UserNotification" Content="User Notification" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                <ComboBox x:Name="ComboBox_UserNotification" HorizontalAlignment="Left" VerticalAlignment="Top" Width="300">
+                    <ComboBoxItem>DisplayAll</ComboBoxItem>
+                    <ComboBoxItem>DisplaySoftwareCenterOnly</ComboBoxItem>
+                    <ComboBoxItem>HideAll</ComboBoxItem>
+                </ComboBox>
+                <Button Name="Button_DeplS_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_Configuration_Saved"
+        Padding="15"
+        Title="Configuration Saved"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label Name="Label_SC_ChildWindow" Content="" HorizontalAlignment="Center" />
+                <Button Name="Button_SC_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_MECM_Connection"
+        Padding="15"
+        Title="MECM Connection"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label Name="Label_MECM_ChildWindow" Content="" />
+                <Button Name="Button_MECM_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow
+        Name="Window_Detection_Script"
+        Padding="15"
+        Title="Detection Script"
+        ShowCloseButton="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+		BorderThickness="1"
+		GlowBrush="{DynamicResource AccentColorBrush}"
+        OverlayBrush="{DynamicResource AccentColorBrush}">
+        <Grid>
+        <StackPanel Margin="20">
+            <StackPanel Orientation="Vertical">
+                <Label Name="Label_EditScript" Content="Edit Script:" />
+                <TextBox Name="TextBox_DetectionScript_ChildWindow" Height="200" Width="200" TextWrapping="Wrap" AcceptsReturn="True" HorizontalAlignment="Center"/>
+                <Button Name="Button_DetectionScript_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    <simpleChildWindow:ChildWindow 
+        Name="Window_About"
+        Title="About MECM App Importer"
+        Padding="15"
+        HorizontalContentAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
+        CloseByEscape="True"
+        OverlayBrush="Transparent"
+        ChildWindowHeight="250"
+        ChildWindowWidth="300"
+        EnableDropShadow="True"
+        BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
+        BorderThickness="1"
+        GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+        AllowMove="True">
+        <simpleChildWindow:ChildWindow.Icon>
+            <iconPacks:PackIconEntypo Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource MahApps.Brushes.IdealForeground}" Kind="Info" />
+		</simpleChildWindow:ChildWindow.Icon>
+        <Grid>
+			<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+				<TextBlock Margin="20" FontSize="24" FontWeight="Thin" Text="MECM App Importer" />
+				<TextBlock x:Name="TextBlock_Version" Margin="10" FontWeight="Thin" Text="" />
+				<TextBlock Margin="10" FontWeight="Thin" Text="René Hartmann" />
+                <Button Name="Button_About_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>	
+		    </StackPanel>
+        </Grid>
+    </simpleChildWindow:ChildWindow>
+
+    </Grid>
+</Controls:MetroWindow>

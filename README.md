@@ -1,8 +1,8 @@
-# MECM_App_Importer
-Tool for importing applications with PSADT into MECM.
+# MEMCM_App_Importer
+Tool for importing applications with PSADT into MEMCM.
 The tool is currently limited to device assignment. User assignment is planned for the next release.
 
-More Info: https://sirconfigmgr.de/mecm-app-importer/
+More Info: https://sirconfigmgr.de/memcm-app-importer/
 
 ![Gui_1](https://user-images.githubusercontent.com/43637014/129900296-c92f70dd-a5f8-4bd3-a5b7-cc54c7e1a82d.jpg)
 ![Gui_2](https://user-images.githubusercontent.com/43637014/129900320-fc427939-b3b4-42c9-ae50-8ec31c460684.jpg)

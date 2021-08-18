@@ -6,9 +6,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:simpleChildWindow="clr-namespace:MahApps.Metro.SimpleChildWindow;assembly=MahApps.Metro.SimpleChildWindow"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-    xmlns:local="clr-namespace:MECM_App_Importer"
+    xmlns:local="clr-namespace:MEMCM_App_Importer"
 	WindowStyle="None"
-    Title="MECM App Importer" 
+    Title="MEMCM App Importer" 
     Height="700" 
     Width="750"
     BorderThickness="1" 		
@@ -99,7 +99,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem x:Name="TabItem_MECM" Header="MECM" >
+            <TabItem x:Name="TabItem_MEMCM" Header="MEMCM" >
                 <Grid Margin="0,100,0,0" HorizontalAlignment="Center" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150" />
@@ -113,8 +113,8 @@
                         <RowDefinition Height="30" />
                         <RowDefinition Height="30" />
 		            </Grid.RowDefinitions>  
-                    <Button x:Name="Button_ConnectMECM" Grid.Column="1" Grid.Row="0" FontSize="12" Content="Connect to MECM" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    <TextBox x:Name="TextBox_ConnectMECM" Grid.Column="2" Grid.Row="0" Width="125" Height="25" VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
+                    <Button x:Name="Button_ConnectMEMCM" Grid.Column="1" Grid.Row="0" FontSize="12" Content="Connect to MEMCM" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="TextBox_ConnectMEMCM" Grid.Column="2" Grid.Row="0" Width="125" Height="25" VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
                     <Button x:Name="Button_AppSettings" Grid.Column="0" Grid.Row="1" FontSize="12" Content="Application Settings" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
                     <Button x:Name="Button_CreateApp" Grid.Column="1" Grid.Row="1" FontSize="12" Content="Create Application" Height="25" Width="140" VerticalAlignment="Center" HorizontalAlignment="Center" IsEnabled="False"/>
                     <TextBox x:Name="TextBox_CreateApp" Grid.Column="2" Grid.Row="1" Width="125" Height="25" VerticalAlignment="Center" HorizontalAlignment="Center" IsReadOnly="True"/>
@@ -168,7 +168,7 @@
     </simpleChildWindow:ChildWindow>
 
     <simpleChildWindow:ChildWindow
-        Name="Window_MECM_ApplicationSettings"
+        Name="Window_MEMCM_ApplicationSettings"
         Padding="15"
         Title="Application Settings"
         ShowCloseButton="True"
@@ -199,7 +199,7 @@
     </simpleChildWindow:ChildWindow>
 
     <simpleChildWindow:ChildWindow
-        Name="Window_MECM_CollectionSettings"
+        Name="Window_MEMCM_CollectionSettings"
         Padding="15"
         Title="Collection Settings"
         ShowCloseButton="True"
@@ -222,7 +222,7 @@
     </simpleChildWindow:ChildWindow>
 
     <simpleChildWindow:ChildWindow
-        Name="Window_MECM_DistributionSettings"
+        Name="Window_MEMCM_DistributionSettings"
         Padding="15"
         Title="Distribution Settings"
         ShowCloseButton="True"
@@ -244,7 +244,7 @@
     </simpleChildWindow:ChildWindow>
 
     <simpleChildWindow:ChildWindow
-        Name="Window_MECM_DeploymentSettings"
+        Name="Window_MEMCM_DeploymentSettings"
         Padding="15"
         Title="Deployment Settings"
         ShowCloseButton="True"
@@ -293,9 +293,9 @@
     </simpleChildWindow:ChildWindow>
 
     <simpleChildWindow:ChildWindow
-        Name="Window_MECM_Connection"
+        Name="Window_MEMCM_Connection"
         Padding="15"
-        Title="MECM Connection"
+        Title="MEMCM Connection"
         ShowCloseButton="True"
         BorderBrush="{DynamicResource MahApps.Brushes.AccentBase}"
 		BorderThickness="1"
@@ -304,8 +304,8 @@
         <Grid>
         <StackPanel Margin="20">
             <StackPanel Orientation="Vertical">
-                <Label Name="Label_MECM_ChildWindow" Content="" />
-                <Button Name="Button_MECM_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>
+                <Label Name="Label_MEMCM_ChildWindow" Content="" />
+                <Button Name="Button_MEMCM_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>
             </StackPanel>
         </StackPanel>
         </Grid>
@@ -333,7 +333,7 @@
 
     <simpleChildWindow:ChildWindow 
         Name="Window_About"
-        Title="About MECM App Importer"
+        Title="About MEMCM App Importer"
         Padding="15"
         HorizontalContentAlignment="Stretch"
         VerticalContentAlignment="Stretch"
@@ -351,7 +351,7 @@
 		</simpleChildWindow:ChildWindow.Icon>
         <Grid>
 			<StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-				<TextBlock Margin="20" FontSize="24" FontWeight="Thin" Text="MECM App Importer" />
+				<TextBlock Margin="20" FontSize="24" FontWeight="Thin" Text="MEMCM App Importer" />
 				<TextBlock x:Name="TextBlock_Version" Margin="10" FontWeight="Thin" Text="" />
 				<TextBlock Margin="10" FontWeight="Thin" Text="René Hartmann" />
                 <Button Name="Button_About_ChildWindow_Close" FontSize="12" Margin="5" Content="Close" HorizontalAlignment="Center"/>	

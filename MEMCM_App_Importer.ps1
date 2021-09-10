@@ -2,8 +2,8 @@
 	.NOTES
 	===========================================================================
 	 Created on:   	2021.07.28
-	 Last Updated:  2021.08.18
-     Version:       0.9
+	 Last Updated:  2021.09.10
+     Version:       1.0
 	 Author:		Rene Hartmann
 	 Filename:     	MEMCM_App_Importer.ps1
 	===========================================================================
@@ -14,7 +14,7 @@
 
 #region # Initializing
 ### Initial Configuration
-$Version = "0.9"
+$Version = "1.0"
 $User = [Environment]::UserName
 $Path = "$PSScriptRoot"
 $LogFolder = "$Path\Logs"
@@ -174,6 +174,7 @@ Function Generate-Package {
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
         $Info = "Checking Values"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+
         # Check Mandatory Values
         If (!($Vendor)) {
             $Window_Package_Generation.IsOpen = $true
@@ -267,6 +268,7 @@ Function Generate-Package {
         If ($CheckBox_PSADT.IsChecked = $true) {
             $Info = "--> Use PSADT - CheckBox Checked"
             Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+            
             # Copy PSADT
             Get-ChildItem -Path "$Path\PSADT\" | Copy-Item -Destination "filesystem::$NewAppDestinationPath" -Recurse -Container -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
             If ($ErrorAction) {
@@ -291,11 +293,27 @@ Function Generate-Package {
                 Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
                 }
 
+            # Copy App Icon
+            If ($Image_Icon) {
+                If (!(Test-Path "filesystem::$NewAppDestinationPath\Icon")) {New-Item -Path "filesystem::$NewAppDestinationPath\Icon" -ItemType directory -Force} 
+                [String]$IconPath = $Image_Icon.Source
+                Copy-Item "$PSScriptRoot\$IconPath" -Destination "filesystem::$NewAppDestinationPath\Icon" -Force -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+                If ($ErrorAction) {
+                    Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Generate_Package" -Type Error
+                    $Window_Package_Generation.IsOpen = $true
+                    $Label_PG_ChildWindow.Content = "Cannot Copy Icon"
+                    }
+                Else {
+                    $Info = "--> Icon Copied"
+                    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+                    }
+                }
+
             # Manipulate Depoloy-Application.ps1
             $Info = "Edit Depoloy-Application.ps1"
             Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
             If ($Installtype -eq "MSI") {$ExecutionString = "Execute-MSI -Action 'Install' -Path '$Installfile' $Installparameter"}
-                Else {$ExecutionString = "Execute-Process -Path '$Installfile' $Installparameter"}
+            Else {$ExecutionString = "Execute-Process -Path '$Installfile' $Installparameter"}
             If ($Uninstalltype -eq "Product Name") {$UninstallString = "Remove-MSIApplications -Name '$UninstallNameOrCode' $Uninstallparameter"}
             Elseif ($Uninstalltype -eq "Product Code") {$UninstallString = "Execute-MSI -Action 'Uninstall' -Path '$UninstallNameOrCode' $Uninstallparameter"}
             Elseif ($Uninstalltype -eq "Script") {$UninstallString = "Execute-Process -Path '$UninstallNameOrCode' $Uninstallparameter"}
@@ -314,13 +332,23 @@ Function Generate-Package {
                 -replace "<InstallCmdline>", "$ExecutionString" `
                 -replace "<UninstallCmdline>", "$UninstallString" `
                 -replace "<Message>", "$MessageString"
-                } | Set-Content "filesystem::$NewAppDestinationPath\Deploy-Application.ps1"
-            
+                } | Set-Content "filesystem::$NewAppDestinationPath\Deploy-Application.ps1" -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+                
+                If ($ErrorAction) {
+                    Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Generate_Package" -Type Error
+                    $Window_Package_Generation.IsOpen = $true
+                    $Label_PG_ChildWindow.Content = "Edit Depoloy-Application.ps1 failed - View Log"
+                    }
+                Else {
+                    $Info = "--> Depoloy-Application.ps1 Successfully Edited"
+                    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+                    }           
             
             }
         Else {
             $Info = "--> Copy Files Without PSADT - CheckBox Not Checked"
             Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+
             # Copy Install Files
             Get-ChildItem -Path "$SourcePath" | Copy-Item -Destination "filesystem::$NewAppDestinationPath" -Recurse -Container -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
             If ($ErrorAction) {
@@ -331,6 +359,22 @@ Function Generate-Package {
             Else {
                 $Info = "--> Install Files Copied"
                 Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+                }
+            
+            # Copy App Icon
+            If ($Image_Icon) {
+                If (!(Test-Path "filesystem::$NewAppDestinationPath\Icon")) {New-Item -Path "filesystem::$NewAppDestinationPath\Icon" -ItemType directory -Force}
+                [String]$IconPath = $Image_Icon.Source
+                Copy-Item "$PSScriptRoot\$IconPath" -Destination "filesystem::$NewAppDestinationPath\Icon" -Force -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+                If ($ErrorAction) {
+                    Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Generate_Package" -Type Error
+                    $Window_Package_Generation.IsOpen = $true
+                    $Label_PG_ChildWindow.Content = "Cannot Copy Icon"
+                    }
+                Else {
+                    $Info = "--> Icon Copied"
+                    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+                    }
                 }
             }
         }
@@ -351,6 +395,7 @@ Function Generate-Package {
     "Language=" + $TextBox_Language.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
     "Architecture=" + $ComboBox_Architecture.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
     "Revision=" + $TextBox_Revision.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
+    If ($Image_Icon) {"Icon=" + ([String]($Image_Icon.Source)).split("\")[1] | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append}
     "Installtype=" + $ComboBox_Installtype.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
     "Installfile=" + $TextBox_Installfile.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
     "Installparameter=" + $TextBox_Installparameter.Text | Out-File -FilePath "$NewAppDestinationPath\Pkg.info" -Encoding utf8 -Append
@@ -394,6 +439,7 @@ Function Load-PkgInfo {
 
     Get-Content $OpenFileDialog.filename | foreach-object -begin {$PkgInfo=@{}} -process { $PkgInfoValues = [regex]::split($_,'='); if(($PkgInfoValues[0].CompareTo("") -ne 0) -and ($PkgInfoValues[0].StartsWith("[") -ne $True)) { $PkgInfo.Add($PkgInfoValues[0], $PkgInfoValues[1]) } }
 
+    If ($PkgInfo.Icon) {Copy-Item "$FileFolder\Icon\$($PkgInfo.Icon)" -Destination "$PSScriptRoot\images" -Force}
     $TextBox_Vendor.AppendText($PkgInfo.Vendor)
     $TextBox_Name.AppendText($PkgInfo.Name)
     $TextBox_Version.AppendText($PkgInfo.Version)
@@ -409,6 +455,7 @@ Function Load-PkgInfo {
     $TextBox_Uninstallparameter.AppendText($PkgInfo.Uninstallparameter)
     $TextBox_Sourcefolder.AppendText($PkgInfo.Sourcefolder)
     $TextBox_Message.AppendText($PkgInfo.Message)
+    $Image_Icon.Source="images\$($PkgInfo.Icon)"
     $Global:NewAppDestinationPath = $PkgInfo.DestinationPath
     If (Test-Path "filesystem::$FileFolder\DetectionScript.ps1") {
         $DetectionScript = Get-Content "filesystem::$FileFolder\DetectionScript.ps1"
@@ -416,6 +463,45 @@ Function Load-PkgInfo {
             $TextBox_DetectionScript_ChildWindow.AppendText($Line)
             $TextBox_DetectionScript_ChildWindow.AppendText("`n`n")
             }
+        }
+    }
+
+Function Load-Icon {
+    $Info = "Enter Function Load-Icon"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Load_Icon" -Type Info
+    [void]
+    [System.Reflection.Assembly]::LoadWithPartialName
+    ("System.Windows.Forms")
+    $OpenFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+    $OpenFileDialog.filter = "Images|*.jpg;*.png;*.bmp"
+    $OpenFileDialog.ShowDialog()
+    $FileFolder = Split-Path $OpenFileDialog.filename -Parent
+    $FileName = Split-Path $OpenFileDialog.filename -Leaf
+
+    Add-Type -AssemblyName System.Drawing
+    $Icon = New-Object System.Drawing.Bitmap $OpenFileDialog.filename
+    If ($Icon.with -le "512" -and $Icon.height -le "512") {
+        $Info = "Icon Size Ok - Copy To Image-Folder"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Load_Icon" -Type Info
+        If (Test-Path $PSScriptRoot\Images\$FileName) {Remove-Item $PSScriptRoot\Images\$FileName -Force}
+        Copy-Item -Path $OpenFileDialog.filename -Destination $PSScriptRoot\Images -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+            If ($ErrorAction) {
+                Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Load_Icon" -Type Error
+                $Window_Package_Generation.IsOpen = $true
+                $Label_PG_ChildWindow.Content = "Cannot Copy Icon File To PSScriptRoot - View Log"
+                }
+            Else {
+                $Image_Icon.Source="images\$FileName"
+                $Info = "--> Icon File Copied To PSScriptRoot"
+                Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Load_Icon" -Type Info
+                }
+        
+        }
+    Else {
+        $Info = "Icon Greater Than 512x512"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Load_Icon" -Type Error
+        $Window_Package_Generation.IsOpen = $true
+        $Label_PG_ChildWindow.Content = "Please Check Icon Dimension - Max. 512x512"
         }
     }
 
@@ -440,6 +526,8 @@ Function Create-Application {
         [String]$DetectionKey,
         [String]$DetectionFile
         )
+
+    [String]$ImagePath = $Image_Icon.Source
     $LocalizedName = "$Name "+" $Version"
     $CompleteAppName = $Vendor + "_" + $Name + "_" + $Version + "_" + $Language + "_" + $Architecture
 
@@ -448,7 +536,9 @@ Function Create-Application {
 
     $Info = "Create Application"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
-    New-CMApplication -Name "$Name $Version" -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+
+    If ($Image_Icon.Source) {New-CMApplication -Name "$Name $Version" -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -IconLocationFile "$PSScriptRoot\$ImagePath" -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+    Else {New-CMApplication -Name "$Name $Version" -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
     If ($ErrorAction) {
         Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Application" -Type Error
         $Window_MEMCM_Connection.IsOpen = $true
@@ -545,8 +635,6 @@ Function Create-Collections {
         $Info = "--> Install Collection Created"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
         }
-
-    Start-Sleep -Seconds 5
 
     $Info = "Create Uninstall Collection"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
@@ -730,6 +818,8 @@ $Button_LoadInstaller = $Form.Findname("Button_LoadInstaller")
 $Button_GeneratePackage = $Form.Findname("Button_GeneratePackage")
 $Button_DetectionButton = $Form.Findname("Button_DetectionButton")
 $Button_LoadPkgInfo = $Form.Findname("Button_LoadPkgInfo")
+$Button_Icon = $Form.Findname("Button_Icon")
+$Image_Icon = $Form.Findname("Image_Icon")
 $TextBox_Vendor = $Form.Findname("TextBox_Vendor")
 $TextBox_Name = $Form.Findname("TextBox_Name")
 $TextBox_Version = $Form.Findname("TextBox_Version")
@@ -826,6 +916,11 @@ $Button_About.Add_Click({
 $Button_Exit.Add_Click({
     $Info = "Exit GUI"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Exit" -Type Info
+    $Info = "Clear Image Folder"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Exit" -Type Info
+    #$Image_Icon.Source = $null
+    $Images = (Get-ChildItem -Path $PSScriptRoot\Images -Exclude "GoLogo.png").FullName
+    Foreach ($Image in $Images) {Remove-Item -Path $Image -Force}
     $Form.Close()
     })
 
@@ -840,6 +935,10 @@ $Button_GeneratePackage.Add_Click({
 
 $Button_LoadPkgInfo.Add_Click({
     Load-PkgInfo
+    })
+
+$Button_Icon.Add_Click({
+    Load-Icon
     })
    
 $Button_PG_ChildWindow_Close.Add_Click({

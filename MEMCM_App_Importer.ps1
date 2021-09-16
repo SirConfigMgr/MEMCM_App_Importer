@@ -3,12 +3,12 @@
 	===========================================================================
 	 Created on:   	2021.07.28
 	 Last Updated:  2021.09.16
-     Version:       1.1
-	 Author:		Rene Hartmann
+         Version:       1.1
+	 Author:	Rene Hartmann
 	 Filename:     	MEMCM_App_Importer.ps1
 	===========================================================================
 	.DESCRIPTION
-		Create MEMCM Applications (optional with PSADT).
+	Create MEMCM Applications (optional with PSADT).
 
 #>
 

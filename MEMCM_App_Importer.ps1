@@ -2,19 +2,28 @@
 	.NOTES
 	===========================================================================
 	 Created on:   	2021.07.28
-	 Last Updated:  2021.09.10
-     Version:       1.0
+	 Last Updated:  2021.09.16
+     Version:       1.1
 	 Author:		Rene Hartmann
 	 Filename:     	MEMCM_App_Importer.ps1
 	===========================================================================
 	.DESCRIPTION
 		Create MEMCM Applications (optional with PSADT).
 
+    .CHANGELOG
+        v1.0
+        2021.09.10
+        Add Application Icon
+
+        v1.1
+        2021.09.16
+        Add Customize Naming Convention
+
 #>
 
 #region # Initializing
 ### Initial Configuration
-$Version = "1.0"
+$Version = "1.1"
 $User = [Environment]::UserName
 $Path = "$PSScriptRoot"
 $LogFolder = "$Path\Logs"
@@ -44,18 +53,10 @@ Function Write-Log {
 
 [CmdletBinding()]
 Param(
-    [parameter(Mandatory=$true)]
-    [String]$LogPath,
-
-    [parameter(Mandatory=$true)]
-    [String]$Message,
-
-    [parameter(Mandatory=$true)]
-    [String]$Component,
-
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("Info", "Warning", "Error")]
-    [String]$Type
+    [parameter(Mandatory=$true)][String]$LogPath,
+    [parameter(Mandatory=$true)][String]$Message,
+    [parameter(Mandatory=$true)][String]$Component,
+    [Parameter(Mandatory=$true)][ValidateSet("Info", "Warning", "Error")][String]$Type
     )
 
 Switch ($Type) {
@@ -78,10 +79,13 @@ Add-Content -Path $LogPath -Value $Content
 
 Function Connect-MEMCM {
 
-    Param(
-        [String]$SiteCode,
-        [String]$ProviderMachineName
-        )
+Param(
+    [String]$SiteCode,
+    [String]$ProviderMachineName
+    )
+
+    $Info = "Enter Function Connect-MEMCM"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "MEMCM_Connect" -Type Info
 
     if((Get-Module ConfigurationManager) -eq $null) {
         Import-Module "$($ENV:SMS_ADMIN_UI_PATH)\..\ConfigurationManager.psd1" 
@@ -109,60 +113,59 @@ Function Read-Installer {
     $FileFolder = Split-Path $OpenFileDialog.filename -Parent
     $FileName = Split-Path $OpenFileDialog.filename -Leaf
 
-    $Info = "Filename: $FileName"
-    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Read_Installer" -Type Info
+    If ($FileName) {
+        $Info = "Filename: $FileName"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Read_Installer" -Type Info
 
-    If ($FileName -like "*.msi") {
-        [IO.FileInfo]$Path = $OpenFileDialog.filename
-        $WindowsInstaller = New-Object -com WindowsInstaller.Installer
-        $MSIDatabase = $WindowsInstaller.GetType().InvokeMember("OpenDatabase","InvokeMethod",$Null,$WindowsInstaller,@($Path.FullName,0))
-        $View = $MSIDatabase.GetType().InvokeMember("OpenView","InvokeMethod",$null,$MSIDatabase,"SELECT * FROM Property")
+        If ($FileName -like "*.msi") {
+            [IO.FileInfo]$Path = $OpenFileDialog.filename
+            $WindowsInstaller = New-Object -com WindowsInstaller.Installer
+            $MSIDatabase = $WindowsInstaller.GetType().InvokeMember("OpenDatabase","InvokeMethod",$Null,$WindowsInstaller,@($Path.FullName,0))
+            $View = $MSIDatabase.GetType().InvokeMember("OpenView","InvokeMethod",$null,$MSIDatabase,"SELECT * FROM Property")
 
-        $View.GetType().InvokeMember("Execute", "InvokeMethod", $null, $View, $null)
-        $MSIProperties = while($Record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$null,$View,$null))
-            {
-            @{$Record.GetType().InvokeMember("StringData","GetProperty",$null,$Record,1) = $Record.GetType().InvokeMember("StringData","GetProperty",$null,$Record,2)}
-                }
-        $ComboBox_Installtype.SelectedIndex = 0
-        $TextBox_Installfile.AppendText($FileName)
-        $Global:MSIProductcode = $MSIProperties.ProductCode
-        $TextBox_Vendor.AppendText($MSIProperties.Manufacturer)
-        $TextBox_Name.AppendText($MSIProperties.ProductName)
-        $TextBox_Version.AppendText($MSIProperties.ProductVersion)
-        $TextBox_Sourcefolder.AppendText($FileFolder)
-        }
+            $View.GetType().InvokeMember("Execute", "InvokeMethod", $null, $View, $null)
+            $MSIProperties = while($Record = $View.GetType().InvokeMember("Fetch","InvokeMethod",$null,$View,$null)){@{$Record.GetType().InvokeMember("StringData","GetProperty",$null,$Record,1) = $Record.GetType().InvokeMember("StringData","GetProperty",$null,$Record,2)}}
+            $ComboBox_Installtype.SelectedIndex = 0
+            $TextBox_Installfile.AppendText($FileName)
+            $Global:MSIProductcode = $MSIProperties.ProductCode
+            $TextBox_Vendor.AppendText($MSIProperties.Manufacturer)
+            $TextBox_Name.AppendText($MSIProperties.ProductName)
+            $TextBox_Version.AppendText($MSIProperties.ProductVersion)
+            $TextBox_Sourcefolder.AppendText($FileFolder)
+            }
 
-    If ($FileName -like "*.exe") {
-        $EXEProperties = Get-ChildItem $OpenFileDialog.filename | % {$_.VersionInfo} | Select *
-        $ComboBox_Installtype.SelectedIndex = 1
-        $TextBox_Installfile.AppendText($FileName)
-        $TextBox_Vendor.AppendText($EXEProperties.CompanyName)
-        $TextBox_Name.AppendText($EXEProperties.ProductName)
-        $TextBox_Version.AppendText($EXEProperties.ProductVersion)
-        $TextBox_Sourcefolder.AppendText($FileFolder)
+        If ($FileName -like "*.exe") {
+            $EXEProperties = Get-ChildItem $OpenFileDialog.filename | % {$_.VersionInfo} | Select *
+            $ComboBox_Installtype.SelectedIndex = 1
+            $TextBox_Installfile.AppendText($FileName)
+            $TextBox_Vendor.AppendText($EXEProperties.CompanyName)
+            $TextBox_Name.AppendText($EXEProperties.ProductName)
+            $TextBox_Version.AppendText($EXEProperties.ProductVersion)
+            $TextBox_Sourcefolder.AppendText($FileFolder)
+            }
         }
     }
 
 Function Generate-Package {
 
-    Param(
-        [String]$DestinationPath,
-        [String]$SourcePath,
-        [String]$Vendor,
-        [String]$Name,
-        [String]$Version,
-        [String]$Language,
-        [String]$Architecture,
-        [String]$Revision,
-        [String]$User,
-        [String]$Installtype,
-        [String]$Installfile,
-        [String]$Installparameter,
-        [String]$Uninstalltype,
-        [String]$UninstallNameOrCode,
-        [String]$UninstallParameter,
-        [String]$Message
-        )
+Param(
+    [String]$DestinationPath,
+    [String]$SourcePath,
+    [String]$Vendor,
+    [String]$Name,
+    [String]$Version,
+    [String]$Language,
+    [String]$Architecture,
+    [String]$Revision,
+    [String]$User,
+    [String]$Installtype,
+    [String]$Installfile,
+    [String]$Installparameter,
+    [String]$Uninstalltype,
+    [String]$UninstallNameOrCode,
+    [String]$UninstallParameter,
+    [String]$Message
+    )
 
     $Info = "Enter Function Generate-Package"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
@@ -234,10 +237,21 @@ Function Generate-Package {
         $Info = "--> Values Correct"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
 
+        # Generate Folder Name
+        $Info = "Generate Folder Name"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+        $NewAppFolderName =$TextBox_NamingAppFolder.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+            -replace ([regex]::Escape("[Name]"),$Name) `
+            -replace ([regex]::Escape("[Version]"),$Version) `
+            -replace ([regex]::Escape("[Language]"),$Language) `
+            -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+            -replace ([regex]::Escape("[Revision]"),$Revision)
+        $Info = "--> Folder Name: $NewAppFolderName"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
+
         # Create Application Folder
         $Info = "Check Application Folder"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
-        $NewAppFolderName = $Vendor + "_" + $Name + "_" + $Version + "_" + $Language + "_" + $Architecture + "_" + $Revision
         $Global:NewAppDestinationPath = $DestinationPath + "\" + $NewAppFolderName
         Write-Host $NewAppDestinationPath
         If (Test-Path "filesystem::$NewAppDestinationPath") {
@@ -265,7 +279,7 @@ Function Generate-Package {
         # Copy Files
         $Info = "Copy Files"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
-        If ($CheckBox_PSADT.IsChecked = $true) {
+        If ($CheckBox_PSADT.IsChecked -eq $true) {
             $Info = "--> Use PSADT - CheckBox Checked"
             Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Generate_Package" -Type Info
             
@@ -452,6 +466,7 @@ Function Load-PkgInfo {
     $ComboBox_Detection.Text= $PkgInfo.Detection
     $ComboBox_Uninstalltype.Text= $PkgInfo.Uninstalltype
     $TextBox_UninstallNameOrCode.AppendText($PkgInfo.UninstallNameOrCode)
+    $Global:MSIProductCode = $PkgInfo.UninstallNameOrCode
     $TextBox_Uninstallparameter.AppendText($PkgInfo.Uninstallparameter)
     $TextBox_Sourcefolder.AppendText($PkgInfo.Sourcefolder)
     $TextBox_Message.AppendText($PkgInfo.Message)
@@ -463,6 +478,11 @@ Function Load-PkgInfo {
             $TextBox_DetectionScript_ChildWindow.AppendText($Line)
             $TextBox_DetectionScript_ChildWindow.AppendText("`n`n")
             }
+        }
+
+    If ($FileName) {
+        $Info = "Load-PkgInfo for Application $($PkgInfo.Name) $($PkgInfo.Version)"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Load_PkgInfo" -Type Info
         }
     }
 
@@ -507,38 +527,71 @@ Function Load-Icon {
 
 Function Create-Application {
 
-    Param(
-        [String]$DestinationPath,
-        [String]$Vendor,
-        [String]$Name,
-        [String]$Version,
-        [String]$Language,
-        [String]$Architecture,
-        [String]$Revision,
-        [String]$User,
-        [String]$Installtype,
-        [String]$Installfile,
-        [String]$Installparameter,
-        [String]$Uninstalltype,
-        [String]$UninstallNameOrCode,
-        [String]$UninstallParameter,
-        [String]$DetectionScript,
-        [String]$DetectionKey,
-        [String]$DetectionFile
-        )
-
-    [String]$ImagePath = $Image_Icon.Source
-    $LocalizedName = "$Name "+" $Version"
-    $CompleteAppName = $Vendor + "_" + $Name + "_" + $Version + "_" + $Language + "_" + $Architecture
+Param(
+    [String]$DestinationPath,
+    [String]$Vendor,
+    [String]$Name,
+    [String]$Version,
+    [String]$Language,
+    [String]$Architecture,
+    [String]$Revision,
+    [String]$User,
+    [String]$Installtype,
+    [String]$Installfile,
+    [String]$Installparameter,
+    [String]$Uninstalltype,
+    [String]$UninstallNameOrCode,
+    [String]$UninstallParameter,
+    [String]$DetectionScript,
+    [String]$DetectionKey,
+    [String]$DetectionFile
+    )
 
     $Info = "Enter Function Create-Application"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+
+    # Generate Localized Application Name
+    $Info = "Generate Localized Application Name"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+    $LocalizedName =$TextBox_NamingLocalizedName.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+        -replace ([regex]::Escape("[Name]"),$Name) `
+        -replace ([regex]::Escape("[Version]"),$Version) `
+        -replace ([regex]::Escape("[Language]"),$Language) `
+        -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+        -replace ([regex]::Escape("[Revision]"),$Revision)
+    $Info = "--> Localized Application Name: $LocalizedName"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+
+    # Generate Application Name
+    $Info = "Generate Localized Application Name"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+    $Global:AppName =$TextBox_NamingApp.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+        -replace ([regex]::Escape("[Name]"),$Name) `
+        -replace ([regex]::Escape("[Version]"),$Version) `
+        -replace ([regex]::Escape("[Language]"),$Language) `
+        -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+        -replace ([regex]::Escape("[Revision]"),$Revision)
+    $Info = "--> Application Name: $AppName"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+
+    # Generate Deployment Type Name
+    $Info = "Generate Deployment Type Name"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
+    $DeploymentTypeName =$TextBox_NamingDeploymentType.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+        -replace ([regex]::Escape("[Name]"),$Name) `
+        -replace ([regex]::Escape("[Version]"),$Version) `
+        -replace ([regex]::Escape("[Language]"),$Language) `
+        -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+        -replace ([regex]::Escape("[Revision]"),$Revision)
+    $Info = "--> Deployment Type Name: $DeploymentTypeName"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
 
     $Info = "Create Application"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
 
-    If ($Image_Icon.Source) {New-CMApplication -Name "$Name $Version" -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -IconLocationFile "$PSScriptRoot\$ImagePath" -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
-    Else {New-CMApplication -Name "$Name $Version" -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+    [String]$ImagePath = $Image_Icon.Source
+    If ($Image_Icon.Source) {New-CMApplication -Name $AppName -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -IconLocationFile "$PSScriptRoot\$ImagePath" -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+    Else {New-CMApplication -Name $AppName -Publisher $Vendor -SoftwareVersion $Version -LocalizedName $LocalizedName -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
     If ($ErrorAction) {
         Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Application" -Type Error
         $Window_MEMCM_Connection.IsOpen = $true
@@ -551,12 +604,18 @@ Function Create-Application {
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
         }
 
-    If ($CheckBox_PSADT.IsChecked = $true) {
+
         $Info = "Create Deployment Type"
         Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
         
         If ($ComboBox_Detection.Text -eq "Product Code") {
-            Add-CMScriptDeploymentType -ApplicationName "$Name $Version" -DeploymentTypeName $CompleteAppName -ContentLocation $DestinationPath -InstallCommand "Deploy-Application.exe" -UninstallCommand "Deploy-Application.exe -Uninstall" -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ProductCode $UninstallNameOrCode -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+            If ($CheckBox_PSADT.IsChecked -eq $true) {Add-CMScriptDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation $DestinationPath -InstallCommand "Deploy-Application.exe" -UninstallCommand "Deploy-Application.exe -Uninstall" -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ProductCode $UninstallNameOrCode -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+            Else {
+                If ($ComboBox_UninstallType.Text -eq "MSI") {$UninstallCommand = "msiexec /x $($MSIProductcode)"}
+                If ($ComboBox_UninstallType.Text -eq "Script") {$UninstallCommand = "$($TextBox_UninstallFile.Text) $($TextBox_UninstallParameter.Text)"}
+                If ($ComboBox_InstallType.Text -eq "MSI") {Add-CMMSIDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation "$($DestinationPath)\$($TextBox_Installfile.Text)" -InstallCommand "msiexec /i $($TextBox_InstallFile.Text) $($TextBox_InstallParameter.Text)" -UninstallCommand $UninstallCommand -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ProductCode $UninstallNameOrCode -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction -Force}
+                If ($ComboBox_InstallType.Text -eq "Script") {Add-CMScriptDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation $DestinationPath -InstallCommand "$($TextBox_InstallFile.Text) $($TextBox_InstallParameter.Text)"  -UninstallCommand $UninstallCommand -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ProductCode $UninstallNameOrCode -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+                }
             If ($ErrorAction) {
                 Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Application" -Type Error
                 $Window_MEMCM_Connection.IsOpen = $true
@@ -579,7 +638,13 @@ Function Create-Application {
             }
 
         If ($ComboBox_Detection.Text -eq "PS Script") {
-            Add-CMScriptDeploymentType -ApplicationName $Name -DeploymentTypeName $CompleteAppName -ContentLocation $DestinationPath -InstallCommand "Deploy-Application.exe" -UninstallCommand "Deploy-Application.exe -Uninstall" -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ScriptText $DetectionScript -ScriptLanguage PowerShell -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+            If ($CheckBox_PSADT.IsChecked -eq $true) {Add-CMScriptDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation $DestinationPath -InstallCommand "Deploy-Application.exe" -UninstallCommand "Deploy-Application.exe -Uninstall" -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ScriptText $DetectionScript -ScriptLanguage PowerShell -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+            Else {
+                If ($ComboBox_UninstallType.Text -eq "MSI") {$UninstallCommand = "msiexec /x $($MSIProductcode)"}
+                If ($ComboBox_UninstallType.Text -eq "Script") {$UninstallCommand = "$($TextBox_UninstallFile.Text) $($TextBox_UninstallParameter.Text)"}
+                If ($ComboBox_InstallType.Text -eq "MSI") {Add-CMMSIDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation "$($DestinationPath)\$($TextBox_Installfile.Text)" -InstallCommand "msiexec /i $($TextBox_InstallFile.Text) $($TextBox_InstallParameter.Text)" -UninstallCommand $UninstallCommand -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ScriptText $DetectionScript -ScriptLanguage PowerShell -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction -Force}
+                If ($ComboBox_InstallType.Text -eq "Script") {Add-CMScriptDeploymentType -ApplicationName $AppName -DeploymentTypeName $DeploymentTypeName -ContentLocation $DestinationPath -InstallCommand "$($TextBox_InstallFile.Text) $($TextBox_InstallParameter.Text)"  -UninstallCommand $UninstallCommand -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -InstallationBehaviorType $ComboBox_InstallBehaviorType.Text -LogonRequirementType $ComboBox_LogonRequirementType.Text -ScriptText $DetectionScript -ScriptLanguage PowerShell -UninstallOption SameAsInstall -ErrorAction SilentlyContinue -ErrorVariable ErrorAction}
+                }
             If ($ErrorAction) {
                 Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Application" -Type Error
                 $Window_MEMCM_Connection.IsOpen = $true
@@ -592,7 +657,6 @@ Function Create-Application {
                 Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Application" -Type Info
                 }
             }
-        }
 
     $Button_CreateApp.IsEnabled = $false
     $TextBox_CreateApp.Background = "Green"
@@ -604,24 +668,45 @@ Function Create-Application {
 
 Function Create-Collections {
 
-    Param (
-        [String]$Vendor,
-        [String]$Name,
-        [String]$Version,
-        [String]$Language,
-        [String]$Architecture
-        )
+Param (
+    [String]$Vendor,
+    [String]$Name,
+    [String]$Version,
+    [String]$Language,
+    [String]$Architecture
+    )
 
     $Info = "Enter Function Create-Collections"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
 
-    $Global:CompleteAppNameInstCol = $Vendor + "_" + $Name + "_" + $Version + "_" + $Language + "_" + $Architecture +"_Install"
-    $Global:CompleteAppNameUninstCol = $Vendor + "_" + $Name + "_" + $Version + "_" + $Language + "_" + $Architecture +"_Uninstall"
-    $CollectionFolderPath = $TextBox_SiteCode.Text + ":\DeviceCollection\" + $TextBox_Folder.Text
+    # Generate Install Collection Name
+    $Info = "Generate Install Collection Name"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
+    $Global:CompleteAppNameInstCol =$TextBox_NamingCollectionInstall.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+        -replace ([regex]::Escape("[Name]"),$Name) `
+        -replace ([regex]::Escape("[Version]"),$Version) `
+        -replace ([regex]::Escape("[Language]"),$Language) `
+        -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+        -replace ([regex]::Escape("[Revision]"),$Revision)
+    $Info = "Install Collection Name: $CompleteAppNameInstCol"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
+
+    # Generate Uninstall Collection Name
+    $Info = "Generate Uninstall Collection Name"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
+    $Global:CompleteAppNameUninstCol =$TextBox_NamingCollectionUninstall.Text -replace([regex]::Escape("[Vendor]"),$Vendor) `
+        -replace ([regex]::Escape("[Name]"),$Name) `
+        -replace ([regex]::Escape("[Version]"),$Version) `
+        -replace ([regex]::Escape("[Language]"),$Language) `
+        -replace ([regex]::Escape("[Architecture]"),$Architecture) `
+        -replace ([regex]::Escape("[Revision]"),$Revision)
+    $Info = "Uninstall Collection Name: $CompleteAppNameUninstCol"
+    Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
 
     # Create Collections
     $Info = "Create Install Collection"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Collections" -Type Info
+    $CollectionFolderPath = $TextBox_SiteCode.Text + ":\DeviceCollection\" + $TextBox_Folder.Text
     New-CMDeviceCollection -Name $CompleteAppNameInstCol -LimitingCollectionName $TextBox_LimitingCollection.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction 
     If ($ErrorAction) {
         Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Collections" -Type Error
@@ -695,26 +780,27 @@ Function Create-Collections {
 
 Function Distribute-Content {
 
-    Param(
-        [String]$Name,
-        [String]$Version
-        )
+Param(
+    [String]$Name,
+    [String]$Version
+    )
 
     $Info = "Enter Function Distribute-Content"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Distribute_Content" -Type Info
-    Start-CMContentDistribution -ApplicationName "$Name $Version" -DistributionPointGroupName $ComboBox_DistributionPointGroup.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
-            If ($ErrorAction) {
-                Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Distribute_Content" -Type Error
-                $TextBox_DistributeContent.Text = "Failed"
-                $TextBox_DistributeContent.TextAlignment = "Center"
-                $TextBox_DistributeContent.Background = "Red"
-                $Global:ContentDistributed = $false
-                Return
-                }
-            Else {
-                $Info = "--> Content Distribution Started"
-                Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Distribute_Content" -Type Info
-                }
+    Start-CMContentDistribution -ApplicationName $AppName -DistributionPointGroupName $ComboBox_DistributionPointGroup.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+    
+    If ($ErrorAction) {
+        Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Distribute_Content" -Type Error
+        $TextBox_DistributeContent.Text = "Failed"
+        $TextBox_DistributeContent.TextAlignment = "Center"
+        $TextBox_DistributeContent.Background = "Red"
+        $Global:ContentDistributed = $false
+        Return
+        }
+    Else {
+        $Info = "--> Content Distribution Started"
+        Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Distribute_Content" -Type Info
+        }
 
     $TextBox_DistributeContent.Text = "Started"
     $TextBox_DistributeContent.TextAlignment = "Center"
@@ -727,15 +813,15 @@ Function Distribute-Content {
 Function Create-Deployments {
 
 Param (
-        [String]$Name,
-        [String]$Version
+    [String]$Name,
+    [String]$Version
     )
 
     $Info = "Enter Function Create-Deployments"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Deployments" -Type Info
     $Info = "Create Install Deployment"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Deployments" -Type Info
-    New-CMApplicationDeployment -CollectionName $CompleteAppNameInstCol -Name "$Name $Version" -DeployAction Install -DeployPurpose $ComboBox_DeployPurpose.Text -DeadlineDateTime (Get-Date) -AvailableDateTime (Get-Date) -UserNotification $ComboBox_UserNotification.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+    New-CMApplicationDeployment -CollectionName $CompleteAppNameInstCol -Name $AppName -DeployAction Install -DeployPurpose $ComboBox_DeployPurpose.Text -DeadlineDateTime (Get-Date) -AvailableDateTime (Get-Date) -UserNotification $ComboBox_UserNotification.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
     If ($ErrorAction) {
         Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Deployments" -Type Error
         $TextBox_CreateDeployments.Text = "Failed"
@@ -750,7 +836,7 @@ Param (
 
     $Info = "Create Uninstall Deployment"
     Write-Log -LogPath $LogPath -Message ($Info | Out-String) -Component "Create_Deployments" -Type Info
-    New-CMApplicationDeployment -CollectionName $CompleteAppNameUninstCol -Name "$Name $Version" -DeployAction Uninstall -DeployPurpose $ComboBox_DeployPurpose.Text -DeadlineDateTime (Get-Date) -AvailableDateTime (Get-Date) -UserNotification $ComboBox_UserNotification.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
+    New-CMApplicationDeployment -CollectionName $CompleteAppNameUninstCol -Name $AppName -DeployAction Uninstall -DeployPurpose $ComboBox_DeployPurpose.Text -DeadlineDateTime (Get-Date) -AvailableDateTime (Get-Date) -UserNotification $ComboBox_UserNotification.Text -ErrorAction SilentlyContinue -ErrorVariable ErrorAction
     If ($ErrorAction) {
         Write-Log -LogPath $LogPath -Message ("-->" + $ErrorAction | Out-String) -Component "Create_Deployments" -Type Error
         $TextBox_CreateDeployments.Text = "Failed"
@@ -896,6 +982,12 @@ $ComboBox_UserNotification = $Form.Findname("ComboBox_UserNotification")
 # Config Tab
 $Button_SaveConfig = $Form.Findname("Button_SaveConfig")
 $TextBox_Destination = $Form.Findname("TextBox_Destination")
+$TextBox_NamingAppFolder = $Form.Findname("TextBox_NamingAppFolder")
+$TextBox_NamingApp = $Form.Findname("TextBox_NamingApp")
+$TextBox_NamingLocalizedName = $Form.Findname("TextBox_NamingLocalizedName")
+$TextBox_NamingDeploymentType = $Form.Findname("TextBox_NamingDeploymentType")
+$TextBox_NamingCollectionInstall = $Form.Findname("TextBox_NamingCollectionInstall")
+$TextBox_NamingCollectionUninstall = $Form.Findname("TextBox_NamingCollectionUninstall")
 $CheckBox_PSADT = $Form.Findname("CheckBox_PSADT")
 
 # Config Tab Childwindow
@@ -955,20 +1047,18 @@ $Button_DetectionScript_ChildWindow_Close.Add_Click({
     })
 
 $ComboBox_Uninstalltype.add_Selectionchanged({
-    Switch ($ComboBox_Uninstalltype.SelectedIndex) {
-        "0" {
+    If ($ComboBox_Uninstalltype.SelectedItem -eq "Product Name") {
             $Label_UninstallNameOrCode.Content = "Product Name"
             $TextBox_UninstallNameOrCode.text = $TextBox_Name.Text
             }
-        "1" {
+    If ($ComboBox_Uninstalltype.SelectedItem -eq "Product Code") {
             $Label_UninstallNameOrCode.Content = "Product Code"
             $TextBox_UninstallNameOrCode.text = $MSIProductcode 
             }
-        "2" {
+    If ($ComboBox_Uninstalltype.SelectedItem -eq "Script") {
             $Label_UninstallNameOrCode.Content = "Script"
             $TextBox_UninstallNameOrCode.text = "" 
             }
-        } 
     })
 
 $ComboBox_Detection.add_Selectionchanged({
@@ -1071,11 +1161,17 @@ $Button_MEMCM_ChildWindow_Close.Add_Click({
 # Config Tab
 $Button_SaveConfig.Add_Click({
     If (Test-Path "$Path\Config.cfg") {Remove-Item "$Path\Config.cfg" -Force}
-    If ($CheckBox_PSADT.IsChecked = $true) {"PSADT=1" | Out-File "$Path\Config.cfg" -Append}
+    If ($CheckBox_PSADT.IsChecked -eq $true) {"PSADT=1" | Out-File "$Path\Config.cfg" -Append}
         Else {"PSADT=0" | Out-File "$Path\Config.cfg" -Append}
     "DEST=" + $TextBox_Destination.Text | Out-File "$Path\Config.cfg" -Append
     "SITECODE=" + $TextBox_Sitecode.Text | Out-File "$Path\Config.cfg" -Append
-    "SITEServer=" + $TextBox_Managementpoint.Text | Out-File "$Path\Config.cfg" -Append
+    "SITESERVER=" + $TextBox_Managementpoint.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMEFOLDER=" + $TextBox_NamingAppFolder.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMEAPP=" + $TextBox_NamingApp.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMELOCALIZED=" + $TextBox_NamingLocalizedName.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMEDEPLOYMENTTYPE=" + $TextBox_NamingDeploymentType.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMEINSTALLCOLLECTION=" + $TextBox_NamingCollectionInstall.Text | Out-File "$Path\Config.cfg" -Append
+    "NAMEUNINSTALLCOLLECTION=" + $TextBox_NamingCollectionUninstall.Text | Out-File "$Path\Config.cfg" -Append
     $Window_Configuration_Saved.IsOpen = $true
     $Label_SC_ChildWindow.Content = "Configuration Saved"
     })
@@ -1084,12 +1180,33 @@ $Button_SC_ChildWindow_Close.Add_Click({
     $Window_Configuration_Saved.IsOpen = $false
     })
 
+$CheckBox_PSADT.Add_Checked({
+    $ComboBox_Uninstalltype.Items.Clear()
+    $ComboBox_Uninstalltype.Items.Add("Product Name")
+    $ComboBox_Uninstalltype.Items.Add("Product Code")
+    $ComboBox_Uninstalltype.Items.Add("Script")
+    })
+
+$CheckBox_PSADT.Add_UnChecked({
+    $ComboBox_Uninstalltype.Items.Clear()
+    $ComboBox_Uninstalltype.Items.Add("Product Code")
+    $ComboBox_Uninstalltype.Items.Add("Script")
+    $ComboBox_Uninstalltype.SelectedItem = "Product Code"
+    })
+
+
 ### Preloaded Configuration
 $TextBlock_Version.Text = "Version $Version"
 If ($Config.PSADT -eq "1") {$CheckBox_PSADT.IsChecked = $true}
 $TextBox_Sitecode.AppendText($Config.SITECODE)
 $TextBox_Managementpoint.AppendText($Config.SITESERVER)
 $TextBox_Destination.AppendText($Config.DEST)
+$TextBox_NamingAppFolder.AppendText($Config.NAMEFOLDER)
+$TextBox_NamingApp.AppendText($Config.NAMEAPP)
+$TextBox_NamingLocalizedName.AppendText($Config.NAMELOCALIZED)
+$TextBox_NamingDeploymentType.AppendText($Config.NAMEDEPLOYMENTTYPE)
+$TextBox_NamingCollectionInstall.AppendText($Config.NAMEINSTALLCOLLECTION)
+$TextBox_NamingCollectionUninstall.AppendText($Config.NAMEUNINSTALLCOLLECTION)
 
 ### Start GUI
 $Form.ShowDialog() | Out-Null

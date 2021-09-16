@@ -10,15 +10,6 @@
 	.DESCRIPTION
 		Create MEMCM Applications (optional with PSADT).
 
-    .CHANGELOG
-        v1.0
-        2021.09.10
-        Add Application Icon
-
-        v1.1
-        2021.09.16
-        Add Customize Naming Convention
-
 #>
 
 #region # Initializing
